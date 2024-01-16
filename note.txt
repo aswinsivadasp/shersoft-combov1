@@ -1,0 +1,158 @@
+import React, { useState, useEffect ,useRef} from 'react';
+import './index.css';
+import { IoIosArrowDown } from "react-icons/io";
+
+const ComboBox = ({ options, findedValue, placeholder, onSelect, onInputChange, className, inputClassName   ,onNextField, onKeyDown}) => {
+    const [inputValue, setInputValue] = useState(findedValue || '');
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState(-1);
+    const [filteredOptions, setFilteredOptions] = useState(options); // New state
+    const inputRef = useRef(null);
+    useEffect(() => {
+        setInputValue(findedValue || ''); // Update input value when findedValue prop changes
+    }, [findedValue]);
+
+
+
+    const handleInputChange = (event) => {
+        const value = event.target.value;
+    
+        setInputValue(value);
+    
+        // Filter options based on the entered value
+        const filtered = options.filter((option) =>
+            option.toLowerCase().includes(value.toLowerCase())
+        );
+        setFilteredOptions(filtered);
+    
+        // Call the onInputChange prop with the new input value
+        onInputChange && onInputChange(value);
+    
+        // Always open the dropdown when there is input
+        setIsOpen(value !== '');
+    
+        // Optionally, you can add logic to handle the case when the input is empty to close the dropdown
+        // if (value === '') {
+        //     setIsOpen(false);
+        // }
+    };
+    
+    const handleToggleDropdown = () => {
+        setIsOpen(!isOpen);
+        setIsArrowRotated(!isArrowRotated);
+    };
+
+    const handleInputFocus = () => {
+        if (!inputValue && findedValue) {
+            setInputValue(findedValue);
+        }
+    };
+    
+    const handleSelectOption = (option) => {
+        setInputValue(option);
+        setIsOpen(false);
+        onSelect && onSelect(option);
+        onInputChange && onInputChange(option);
+        setSelectedIndex(-1); // Reset selectedIndex to -1 after selecting an option
+    };
+
+    
+    const handleKeyDown = (event) => {
+        if (isOpen) {
+            switch (event.key) {
+                case 'ArrowUp':
+                    event.preventDefault();
+                    setSelectedIndex((prevIndex) =>
+                        prevIndex > 0 ? prevIndex - 1 : options.length - 1
+                    );
+                    break;
+                case 'ArrowDown':
+                    event.preventDefault();
+                    setSelectedIndex((prevIndex) =>
+                        prevIndex < options.length - 1 ? prevIndex + 1 : 0
+                    );
+                    break;
+                case 'Enter':
+                    if (selectedIndex !== -1) {
+                        handleSelectOption(filteredOptions[selectedIndex]);
+                    }
+                    setIsOpen(false);
+                    break;
+                case 'Escape':
+                    setIsOpen(false);
+                    break;
+                default:
+                    break;
+            }
+        }
+        // Pass the event to the parent component
+        onKeyDown && onKeyDown(event);
+    };
+    
+    useEffect(() => {
+        // Focus on the input field when the component mounts or findedValue changes
+        inputRef.current.focus();
+    }, [findedValue]);
+
+    useEffect(() => {
+        const handleOutsideClick = (event) => {
+            if (
+                isOpen &&
+                event.target.closest('.combo-box-container') === null
+            ) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener('click', handleOutsideClick);
+
+        return () => {
+            document.removeEventListener('click', handleOutsideClick);
+        };
+    }, [isOpen]);
+    // Add a state to track whether the dropdown is open or closed
+    const [isArrowRotated, setIsArrowRotated] = useState(false);
+
+    return (
+        <div className={`combo-box-container ${className}`}>
+            <div className="combo-box-input" onClick={handleToggleDropdown}>
+                <input
+                 ref={inputRef}
+                    type="text"
+                    value={inputValue }
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    className={`combo-box-input-field ${inputClassName}`}
+                    
+                />
+
+                {/* <div className={`arrow-icon ${isOpen ? 'rotated' : ''}`} onClick={handleToggleDropdown}>
+                    &#9660;
+                </div> */}
+                <div className={`arrow-icon ${isOpen ? 'rotated' : ''}`} onClick={handleToggleDropdown}>
+                <IoIosArrowDown />
+                </div>
+
+
+                {isOpen && (
+                    <div className="combobox-dropdown">
+                        {filteredOptions.map((option, index) => (
+                            <div
+                                key={index}
+                                className={`dropdown-option ${index === selectedIndex ? 'selected' : ''
+                                    }`}
+                                onClick={() => handleSelectOption(option)}
+                            >
+                                {option}
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+            </div>
+        </div>
+    );
+};
+
+export default ComboBox;
+
