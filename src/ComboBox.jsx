@@ -5,9 +5,11 @@ import { IoIosArrowDown } from "react-icons/io";
 const ComboBox = ({ options, findedValue, placeholder, onSelect, onInputChange, className, inputClassName  , onKeyDown,comboRef}) => {
     const [inputValue, setInputValue] = useState(findedValue || '');
     const [isOpen, setIsOpen] = useState(false);
+
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [filteredOptions, setFilteredOptions] = useState(options); // New state
-
+   
+    
     useEffect(() => {
         setInputValue(findedValue || ''); // Update input value when findedValue prop changes
     }, [findedValue]);
@@ -34,18 +36,9 @@ const ComboBox = ({ options, findedValue, placeholder, onSelect, onInputChange, 
        
     };
     
-    const handleToggleDropdown = () => {
-        setIsOpen(!isOpen);
-        setIsArrowRotated(!isArrowRotated);
-    };
+  
 
-    const handleInputFocus = () => {
-        setIsOpen(true);
-        
-        if (!inputValue && findedValue) {
-          setInputValue(findedValue); 
-        }
-      }
+   
     const handleSelectOption = (option) => {
         setInputValue(option);
         setIsOpen(false);
@@ -87,20 +80,21 @@ const ComboBox = ({ options, findedValue, placeholder, onSelect, onInputChange, 
         onKeyDown && onKeyDown(event);
     };
     
-    useEffect(() => {
-        // Focus on the input field when the component mounts or findedValue changes
-        comboRef.current.focus();
-    }, [findedValue]);
+    // useEffect(() => {
+    //     // Focus on the input field when the component mounts or findedValue changes111111
+    //     comboRef.current.focus();
+        
+    // }, [findedValue]);
 
     useEffect(() => {
         const handleOutsideClick = (event) => {
-            if (
-                isOpen &&
-                event.target.closest('.combo-box-container') === null
-            ) {
+            const inputElement = comboRef.current;
+        
+            if (isOpen && inputElement && !inputElement.contains(event.target)) {
                 setIsOpen(false);
             }
         };
+        
 
         document.addEventListener('click', handleOutsideClick);
 
@@ -120,12 +114,12 @@ const ComboBox = ({ options, findedValue, placeholder, onSelect, onInputChange, 
             backgroundColor: '#f0f0f0',
         },
         combo_box_input: {
-            height: '100%',
+           
         },
         'combo_box_input_field': {
             padding: '8px',
             cursor: 'pointer',
-            borderRadius: '5px',
+          
         },
         'arrow_icon': {
             position: 'absolute',
@@ -136,19 +130,22 @@ const ComboBox = ({ options, findedValue, placeholder, onSelect, onInputChange, 
         },
         combo_box_container: {
             position: 'relative',
+
         },
         combo_box_input: {
             position: 'relative',
+            width:"100%",
+            height:"100%"
         },
         'combo_box_input_field': {
             padding: 'right: 30px',
             display: 'flex',
             alignItems: 'center',
-            border: '1px solid black',
+           
             width: '100%',
             height: '100%',
             cursor: 'pointer',
-            borderRadius: '5px',
+            
         },
         'arrow_icon.rotated': {
             transform: 'translateY(-50%) rotate(180deg)',
@@ -168,7 +165,7 @@ const ComboBox = ({ options, findedValue, placeholder, onSelect, onInputChange, 
     /////////////
     return (
         <div className={`combo_box_container ${className}` } style={styles.combo_box_container}>
-            <div className="combo_box_input" style={styles.combo_box_input} onClick={handleToggleDropdown}>
+            <div className="combo_box_input" style={styles.combo_box_input}>
                 <input
                  ref={comboRef}
                     type="text"
@@ -177,13 +174,14 @@ const ComboBox = ({ options, findedValue, placeholder, onSelect, onInputChange, 
                     onKeyDown={handleKeyDown}
                     className={`combo_box_input_field ${inputClassName}`}
                     style={styles.combo_box_input_field}
-                    onFocus={handleInputFocus}
+                    onFocus={() => setIsOpen(true)}
+                   
                 />
 
                 {/* <div className={`arrow-icon ${isOpen ? 'rotated' : ''}`} onClick={handleToggleDropdown}>
                     &#9660;
                 </div> */}
-                <div style={styles.arrow_icon} className={`arrow_icon ${isOpen ? 'rotated' : ''}`} onClick={handleToggleDropdown}>
+                <div style={styles.arrow_icon} className={`arrow_icon ${isOpen ? 'rotated' : ''}`} >
                 <IoIosArrowDown />
                 </div>
 
